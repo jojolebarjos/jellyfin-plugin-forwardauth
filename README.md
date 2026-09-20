@@ -41,4 +41,7 @@ Instead, copy only `bin/ForwardAuth.dll` into a `plugins/ForwardAuth/` folder in
 The plugin has no config file of its own to edit.
 Its settings live in Jellyfin's admin dashboard, under Dashboard → Plugins → Forward Auth.
 For an Authentik outpost, the default, `X-authentik-username`, already matches.
-For an Authentik outpost, set the trusted username header to `X-authentik-username` and the logout redirect URL to `/outpost.goauthentik.io/sign_out`.
+
+Before committing, run `dotnet format ForwardAuth.slnx`.
+It ships with the SDK, no separate install, and checks the project's `.editorconfig`.
+`dotnet build` also enforces the same style, and a broader set of static-analysis rules, as build errors.
