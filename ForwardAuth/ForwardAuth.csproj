@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Pages\**\*" />
+    <EmbeddedResource Include="Pages\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Jellyfin.Controller" Version="12.*-*" />
   </ItemGroup>
 

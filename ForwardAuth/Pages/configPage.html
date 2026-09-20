@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Forward Auth</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="forwardAuthConfigForm">
+                    <div class="verticalSection verticalSection-extrabottompadding">
+                        <div class="sectionTitleContainer flex align-items-center">
+                            <h2 class="sectionTitle">Forward Auth Settings</h2>
+                        </div>
+                        <p>
+                            <i>Note:</i> the reverse proxy in front of Jellyfin must
+                            strip this header from any request it did not itself
+                            authenticate, or a client could set it directly.
+                        </p>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtHeaderName" required label="Trusted username header:" />
+                            <div class="fieldDescription">The header the reverse proxy sets to the authenticated username, for example X-authentik-username.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtLogoutRedirectUrl" label="Logout redirect URL:" />
+                            <div class="fieldDescription">
+                                Where to send the browser after signing out of Jellyfin,
+                                for example /outpost.goauthentik.io/sign_out for an
+                                Authentik outpost on this same domain. Leave empty to
+                                leave Jellyfin's own logout behavior alone.
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginUniqueId = "29445226-96ee-4bf7-b9e7-8fbee1aa7ab1";
+
+                document.querySelector('.pluginConfigurationPage').addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
+                        document.querySelector('#txtHeaderName').value = config.HeaderName;
+                        document.querySelector('#txtLogoutRedirectUrl').value = config.LogoutRedirectUrl;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                document.querySelector('#forwardAuthConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
+                        config.HeaderName = document.querySelector('#txtHeaderName').value;
+                        config.LogoutRedirectUrl = document.querySelector('#txtLogoutRedirectUrl').value;
+                        ApiClient.updatePluginConfiguration(pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>
