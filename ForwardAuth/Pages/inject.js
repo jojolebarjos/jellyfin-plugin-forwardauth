@@ -1,31 +1,9 @@
 // Injected as the first child of <head> in the Web client's served
-// index.html, before Jellyfin's own bundle runs. Two independent jobs:
-// sign the browser in automatically when a trusted header is present,
-// and, if configured, send the browser to the identity provider's own
-// logout page once Jellyfin's own logout completes. See
-// ForwardAuthController for the server-side half of both, and
+// index.html, before Jellyfin's own bundle runs. Signs the browser in
+// automatically when a trusted header is present. See
+// ForwardAuthController for the server-side half of this, and
 // LoginInjectionMiddleware for how this file gets served here.
 (function () {
-    var logoutRedirectUrl = __LOGOUT_REDIRECT_URL__;
-
-    if (logoutRedirectUrl) {
-        var originalFetch = window.fetch;
-        window.fetch = function (resource, options) {
-            var url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
-            var method = (options && options.method) || (resource && resource.method) || 'GET';
-            var isLogout = String(method).toUpperCase() === 'POST' && /\/Sessions\/Logout(\?|$)/i.test(url);
-            var promise = originalFetch.apply(this, arguments);
-            if (isLogout) {
-                promise.then(function (response) {
-                    if (response && response.ok) {
-                        window.location.href = logoutRedirectUrl;
-                    }
-                });
-            }
-            return promise;
-        };
-    }
-
     try {
         var creds = JSON.parse(localStorage.getItem('jellyfin_credentials') || '{}');
         var servers = creds.Servers || [];

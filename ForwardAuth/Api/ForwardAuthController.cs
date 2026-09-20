@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
@@ -40,7 +39,7 @@ public class ForwardAuthController(IUserManager userManager, ISessionManager ses
         }
         else if (!string.Equals(user.AuthenticationProviderId, ProviderId, StringComparison.Ordinal))
         {
-            // This username belongs to an account we do not manage
+            // This username belongs to another provider
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
@@ -67,16 +66,11 @@ public class ForwardAuthController(IUserManager userManager, ISessionManager ses
     [HttpGet("inject.js")]
     public ActionResult InjectScript()
     {
-        var configuration = Plugin.Instance!.Configuration;
         using var stream = GetType().Assembly.GetManifestResourceStream("Jellyfin.Plugin.ForwardAuth.Pages.inject.js")!;
         using var reader = new StreamReader(stream);
-        var script = reader.ReadToEnd().Replace(
-            "__LOGOUT_REDIRECT_URL__",
-            JsonSerializer.Serialize(configuration.LogoutRedirectUrl),
-            StringComparison.Ordinal);
 
-        // Do not cache, as this would get stale in case of settings change
+        // Do not cache, as this would get stale in case of update
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
-        return Content(script, "text/javascript");
+        return Content(reader.ReadToEnd(), "text/javascript");
     }
 }

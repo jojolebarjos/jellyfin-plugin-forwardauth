@@ -21,15 +21,6 @@
                             <input is="emby-input" type="text" id="txtHeaderName" required label="Trusted username header:" />
                             <div class="fieldDescription">The header the reverse proxy sets to the authenticated username, for example X-authentik-username.</div>
                         </div>
-                        <div class="inputContainer">
-                            <input is="emby-input" type="text" id="txtLogoutRedirectUrl" label="Logout redirect URL:" />
-                            <div class="fieldDescription">
-                                Where to send the browser after signing out of Jellyfin,
-                                for example /outpost.goauthentik.io/sign_out for an
-                                Authentik outpost on this same domain. Leave empty to
-                                leave Jellyfin's own logout behavior alone.
-                            </div>
-                        </div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block">
@@ -47,7 +38,6 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
                         document.querySelector('#txtHeaderName').value = config.HeaderName;
-                        document.querySelector('#txtLogoutRedirectUrl').value = config.LogoutRedirectUrl;
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -57,7 +47,6 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
                         config.HeaderName = document.querySelector('#txtHeaderName').value;
-                        config.LogoutRedirectUrl = document.querySelector('#txtLogoutRedirectUrl').value;
                         ApiClient.updatePluginConfiguration(pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
                     return false;

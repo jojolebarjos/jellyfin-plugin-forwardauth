@@ -23,8 +23,7 @@ public class LoginInjectionMiddleware
             return;
         }
 
-        // The static file handler must return raw, uncompressed bytes for
-        // us to patch, and never a 304 that skips the body entirely.
+        // The static file handler must return raw, uncompressed bytes for us to patch, and never a 304 that skips the body entirely
         context.Request.Headers.Remove("Accept-Encoding");
         context.Request.Headers.Remove("If-None-Match");
         context.Request.Headers.Remove("If-Modified-Since");
@@ -65,7 +64,7 @@ public class LoginInjectionMiddleware
         var patched = html.Insert(headOpen.Index + headOpen.Length, scriptTag);
         var patchedBytes = Encoding.UTF8.GetBytes(patched);
 
-        // Do not cache, as this would get stale in case of plugin change
+        // Do not cache, as this would get stale in case of update
         context.Response.Headers.Remove("ETag");
         context.Response.Headers.Remove("Last-Modified");
         context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
