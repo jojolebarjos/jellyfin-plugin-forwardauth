@@ -43,6 +43,21 @@ public class ForwardAuthController(IUserManager userManager, ISessionManager ses
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
+        if (!string.IsNullOrEmpty(configuration.AdminGroup))
+        {
+            // Authentik separates groups with a pipe
+            var groups = Request.Headers[configuration.GroupsHeaderName].ToString().Split('|');
+            var isAdmin = groups.Contains(configuration.AdminGroup, StringComparer.Ordinal);
+
+            // Go through the policy, as the dashboard does, since SetPermission with UpdateUserAsync was reported not to persist
+            var policy = userManager.GetUserDto(user).Policy;
+            if (policy.IsAdministrator != isAdmin)
+            {
+                policy.IsAdministrator = isAdmin;
+                await userManager.UpdatePolicyAsync(user.Id, policy).ConfigureAwait(false);
+            }
+        }
+
         var request = new AuthenticationRequest
         {
             UserId = user.Id,

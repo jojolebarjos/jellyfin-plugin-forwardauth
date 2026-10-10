@@ -39,3 +39,13 @@ Copy `bin/ForwardAuth.dll` into a `plugins/ForwardAuth/` folder inside the Jelly
 
 By default, it expects a `X-authentik-username` header, as set by Authentik.
 This can be changed in the plugin settings.
+
+Optionally, an administrator group can be set: members of that Authentik group, read from the `X-authentik-groups` header, are made Jellyfin administrators at login, and lose that right once removed from the group.
+
+Since reaching the settings already requires an administrator, the group is best set before the first start, in `plugins/configurations/ForwardAuth.xml` inside the Jellyfin data directory:
+
+```xml
+<PluginConfiguration>
+  <AdminGroup>jellyfin-admins</AdminGroup>
+</PluginConfiguration>
+```

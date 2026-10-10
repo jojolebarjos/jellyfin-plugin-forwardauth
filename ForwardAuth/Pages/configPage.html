@@ -14,12 +14,20 @@
                         </div>
                         <p>
                             <i>Note:</i> the reverse proxy in front of Jellyfin must
-                            strip this header from any request it did not itself
+                            strip these headers from any request it did not itself
                             authenticate, or a client could set it directly.
                         </p>
                         <div class="inputContainer">
                             <input is="emby-input" type="text" id="txtHeaderName" required label="Trusted username header:" />
                             <div class="fieldDescription">The header the reverse proxy sets to the authenticated username, for example X-authentik-username.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtGroupsHeaderName" required label="Trusted groups header:" />
+                            <div class="fieldDescription">The header the reverse proxy sets to the user's groups, separated by a pipe, for example X-authentik-groups.</div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtAdminGroup" label="Administrator group:" />
+                            <div class="fieldDescription">Members of this group are made Jellyfin administrators at login, and non-members lose administrator rights. The match is case sensitive. Leave empty to manage administrators manually.</div>
                         </div>
                     </div>
                     <div>
@@ -38,6 +46,8 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
                         document.querySelector('#txtHeaderName').value = config.HeaderName;
+                        document.querySelector('#txtGroupsHeaderName').value = config.GroupsHeaderName;
+                        document.querySelector('#txtAdminGroup').value = config.AdminGroup;
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -47,6 +57,8 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
                         config.HeaderName = document.querySelector('#txtHeaderName').value;
+                        config.GroupsHeaderName = document.querySelector('#txtGroupsHeaderName').value;
+                        config.AdminGroup = document.querySelector('#txtAdminGroup').value.trim();
                         ApiClient.updatePluginConfiguration(pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
                     return false;
