@@ -1,6 +1,8 @@
+using System.Security.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +12,9 @@ namespace Jellyfin.Plugin.ForwardAuth.Api;
 [ApiController]
 [AllowAnonymous]
 [Route("[controller]")]
-public class ForwardAuthController(IUserManager userManager, ISessionManager sessionManager) : ControllerBase
+public class ForwardAuthController(IUserManager userManager, ISessionManager sessionManager, ICryptoProvider cryptoProvider) : ControllerBase
 {
-    private sealed class NoPasswordProvider;
-
-    // Use fake unregistered provider, to prevent any password-based login
-    private static readonly string ProviderId = typeof(NoPasswordProvider).FullName!;
+    private static readonly string ProviderId = typeof(ForwardAuthProvider).FullName!;
 
     [HttpPost("Login")]
     public async Task<ActionResult<AuthenticationResult>> Login([FromQuery] string? deviceId)
@@ -32,15 +31,23 @@ public class ForwardAuthController(IUserManager userManager, ISessionManager ses
         var user = userManager.GetUserByName(username);
         if (user is null)
         {
-            // Create user, this is their first login to Jellyfin
+            // Create user, this is their first login to Jellyfin; saved below along with its password
             user = await userManager.CreateUserAsync(username).ConfigureAwait(false);
             user.AuthenticationProviderId = ProviderId;
-            await userManager.UpdateUserAsync(user).ConfigureAwait(false);
         }
         else if (!string.Equals(user.AuthenticationProviderId, ProviderId, StringComparison.Ordinal))
         {
             // This username belongs to another provider
             return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        // Switching the user to the default provider, which accepts an empty password,
+        // should not leave the account open, so give every user an unknown password
+        if (string.IsNullOrEmpty(user.Password))
+        {
+            var password = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            user.Password = cryptoProvider.CreatePasswordHash(password).ToString();
+            await userManager.UpdateUserAsync(user).ConfigureAwait(false);
         }
 
         if (!string.IsNullOrEmpty(configuration.AdminGroup))

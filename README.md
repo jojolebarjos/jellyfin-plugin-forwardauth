@@ -18,8 +18,8 @@ By the time the request reach the backend, the reverse proxy will have attached 
  * If the user exists, but is owned by another provider, the call is rejected. The script will silently fail, and let the login page show.
  * If the user does not exist, a new one is silently created; this plugin fully trusts the reverse proxy and identifity provider.
 
-Internally, a non-existant provider is associated to the users created by this plugin.
-They will never be able to log in using a password.
+Internally, users created by this plugin are assigned its own "Forward Auth" authentication provider, which refuses any password login.
+An administrator can hand an existing user to this plugin, or release one from it, by changing the provider on the user's profile page.
 
 On a similar note, the logout flow cannot be completed.
 While the session will be properly cleared, the user will just get automatically logged in again at their next page navigation, as the identity provider was not notified.
